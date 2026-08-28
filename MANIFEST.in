@@ -1,0 +1,3 @@
+include README.md
+include *.spec
+include docs/*.md

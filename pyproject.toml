@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version", "readme"]
+name = "changenotifier"
+dependencies = [
+    "requests<2.99"
+]
+authors = [
+    {name = "Manuel Amador (Rudd-O)", email = "rudd-o@rudd-o.com"}
+]
+description = "Get HTTP notifications or run commands when files are changed"
+keywords = ["media", "filemanagement", "inotify"]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Environment :: No Input/Output (Daemon)',
+    'Intended Audience :: End Users/Desktop',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: GNU General Public License (GPL)',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3 :: Only',
+    'Topic :: Utilities',
+]
+
+[project.urls]
+Homepage = "https://github.com/Rudd-O/changenotifier"
+Repository = "https://github.com/Rudd-O/changenotifier"
+Issues = "https://github.com/Rudd-O/changenotifier/issues"
+
+[project.scripts]
+changenotifier = "changenotifier:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "changenotifier.__version__"}
+readme = {file = "README.md"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

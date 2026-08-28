@@ -1,0 +1,7 @@
+*.pyc
+*~
+dist
+organizer-*
+organizer.egg-info
+build
+.settings
