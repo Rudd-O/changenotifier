@@ -43,9 +43,11 @@ Failed webhook deliveries (e.g. the server hosting the webhook is down, or it re
 
 `SIGTERM` triggers a clean shutdown (kills all watchers and coalescers, then exits).  `SIGUSR1` toggles log levels between DEBUG and INFO at runtime without restarting.
 
-## Installation
+## Setup
 
 ### Prerequisites
+
+*This section only applies if you will be installing from source.*
 
 - Linux
 - The `inotifywait` command available (part of the `inotify-tools` package)
@@ -53,24 +55,27 @@ Failed webhook deliveries (e.g. the server hosting the webhook is down, or it re
 - The `requests` Python package (listed as a dependency)
 - The `pyxdg` Python package (listed as a dependency)
 
-### Install from source
+### Installation
+
+The typical way is to install from source.
 
 ```bash
 pip install .
 ```
 
-Or install in development/editable mode:
+To get the systemd service units installed, you can `make install` in the source directory.
 
-```bash
-pip install -e .
-```
+You can also use prebuilt packages.  RPMs for Fedora are available at [repo.rudd-o.com](https://repo.rudd-o.com/).  You can also build your own packages — the RPM specfile is included in the source so you can build your own source tarball using `python3 -m build --sdist` and then build the RPM accordingly (using `make rpm`).  The systemd service units are included in the prebuilt package.
 
-This registers the `changenotifier` CLI entry point, which invokes `main()` from `src/changenotifier/__init__.py`.
+### Configuring the program
 
-### RPM packaging
+To configure `changenotifier`, see the [configuration document](docs/Configuration.md) for details.
 
-RPMs for Fedora are available at [repo.rudd-o.com](https://repo.rudd-o.com/).  The RPM specfile is included so you can build your own source tarball using `python3 -m build --sdist` and then build the RPM accordingly (using `make rpm`).
+After configuration, you can run `changenotifier` in your terminal, to verify that the configuration is properly read and the expected directories are being monitored.
 
-## Configuration
+### Running it as a service
 
-See the [configuration document](docs/Configuration.md) for details.
+There are two ways of running the program in the background, after the program has been configured for a particular computer user:
+
+* As a systemd system service: `systemctl enable --now changenotifier@$USER`.  This method runs `changenotifier` as soon as the system boots.
+* As a systemd user service: `systemctl --user enable --now changenotifier`.  This method runs the program as soon as the user logs in or, if `loginctl enable-linger $USER` has been run, as soon as the system boots and the user session has started.
