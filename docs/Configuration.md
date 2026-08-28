@@ -24,6 +24,7 @@ The configuration file is JSON-formatted, and the minimum configuration requires
 | Field                | Type    | Default | Description                                                    |
 |----------------------|---------|---------|----------------------------------------------------------------|
 | `coalesce_timeout`   | number  | 15.0    | The grace period in seconds. Files changed within this window are grouped together; only the most recent file triggers a notification per watched path. Global default used when individual paths do not specify their own timeout. |
+| `command`            | string  |         | An optional shell command to run on every file change event. The following environment variables are available (derived from webhook data): `LATEST_MODIFIED_ITEM`, `LATEST_MODIFIED_FOLDER`, `LATEST_MODIFIED_FILE`, `EVENTS`, `SOURCE`. If the command fails, a warning is logged but the notification continues. |
 | `debug`              | boolean | false   | When true, log level is set to DEBUG immediately on startup. |
 
 ### Paths configuration
@@ -72,6 +73,12 @@ Paths that are dicts use the same keys as before: `path` specifies the directory
   // Default grace period in seconds for all watch paths, used if individual paths
   // do not specify their own coalesce_timeout.
   "coalesce_timeout": 15.0,
+
+  // Optional: run a shell command on every file change event. Environment variables
+  // available inside the command: LATEST_MODIFIED_ITEM, LATEST_MODIFIED_FOLDER,
+  // LATEST_MODIFIED_FILE, EVENTS, SOURCE. Failure is logged as a warning but does not
+  // prevent the webhook notification from being sent.
+  "command": "curl -X POST https://example.com/hook -d \"file=$LATEST_MODIFIED_ITEM\"",
 
   // List of directories to watch. Each entry is one of:
   //   - A plain string: just a directory path (uses global coalesce_timeout).

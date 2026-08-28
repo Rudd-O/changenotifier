@@ -71,12 +71,14 @@ class Coalescer(threading.Thread):
         roots: list[str],
         webhook: str,
         coalesce_timeout: float = 30,
+        command: str | None = None,
     ):
         super().__init__()
         self.queue = queue
         self.root_times = Classifier(roots)
         self.webhook = webhook
         self.coalesce_timeout = coalesce_timeout
+        self.command = command
         self.logger = logging.getLogger("Coalescer").getChild(
             str(roots) if len(roots) > 1 else roots[0]
         )
@@ -140,6 +142,16 @@ class Coalescer(threading.Thread):
             "events": evt,
             "source": "changenotifier",
         }
+
+        if self.command is not None:
+            env = os.environ | {k.upper(): v for k, v in data.items()}
+            try:
+                result = subprocess.run(self.command, shell=True, env=env, timeout=30)
+                if result.returncode != 0:
+                    self.logger.error("Command exited with code %d", result.returncode)
+            except Exception as e:
+                self.logger.warning("Command execution failed: %s", e)
+
         while True:
             try:
                 r = requests.post(self.webhook, json=data)
@@ -259,6 +271,7 @@ def main() -> None:
         paths = typing.cast(typing.Iterable[str | PathWithTimeout], conf["paths"])
         webhook = typing.cast(str, conf["webhook"])
         debug = typing.cast(bool, conf.get("debug", False))
+        command = typing.cast(str | None, conf.get("command"))
         coalesce_timeout = typing.cast(float, conf.get("coalesce_timeout", 15.0))
 
     logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
@@ -283,7 +296,7 @@ def main() -> None:
             p = pth
             t = coalesce_timeout
         q: queue.Queue[tuple[str, str] | typing.Literal["QUIT"]] = queue.Queue()
-        c = Coalescer(q, [p], webhook, t)
+        c = Coalescer(q, [p], webhook, t, command)
         n = Watcher(q, [p])
         c.start()
         n.start()
