@@ -8,5 +8,5 @@ docs/README.md                                 # main documentation of the progr
 docs/*.md                                      # general documentation of the program, features, commands, and use
 ```
 
-Tox (`tox --current-env`) is the test framework, and it runs Ruff and MyPy.
+Tox (`tox --current-env`) is the test framework, and it runs Ruff, MyPy and pytest.
 You can invoke the tests using command `make qa`.
