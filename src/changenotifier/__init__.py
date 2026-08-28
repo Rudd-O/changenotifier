@@ -283,6 +283,7 @@ def main() -> None:
         os.path.join(xdg.BaseDirectory.xdg_config_home, cn)
     ]
     configfiles = userconfigs + [os.path.join("/etc", cn)]
+    configfiles = [c for c in configfiles if os.path.exists(c)]
     assert configfiles, (
         f"The configuration file changenotifier.conf could not be found among {configfiles}"
     )
