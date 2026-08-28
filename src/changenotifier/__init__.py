@@ -150,7 +150,10 @@ class Coalescer(threading.Thread):
         if self.command is not None:
             env = os.environ | {k.upper(): v for k, v in data.items()}
             try:
-                result = subprocess.run(self.command, shell=True, env=env, timeout=30)
+                shell = os.getenv("SHELL") or "/bin/sh"
+                result = subprocess.run(
+                    [shell, "-c", self.command], env=env, timeout=30
+                )
                 if result.returncode != 0:
                     self.logger.error("Command exited with code %d", result.returncode)
             except Exception as e:

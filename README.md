@@ -23,6 +23,8 @@ Command failures are logged as errors while the program moves on to continue bus
 
 The command will always be run before any configured webhook is called.
 
+All commands are run by invoking `$SHELL -c <command>` so your shell should support the `-c` argument.  After 30 seconds of the command not finishing, the process will be killed.
+
 ### Webhook notifications
 
 If configured to notify via webhook, this program will send a JSON POST to the webhook URL:

@@ -136,10 +136,15 @@ class TestCommandOnly:
             run_mock.return_value = mock.Mock(returncode=0)
 
             c = make_coalescer(webhook=None, command="echo hello")
+            currshell = os.getenv("SHELL")
+            os.environ["SHELL"] = "/bin/zsh"
             c.notify("/tmp/x.txt", "CREATE")
+            if currshell is not None:
+                # restore shell
+                os.environ["SHELL"] = currshell
 
         run_mock.assert_called_once_with(
-            "echo hello", shell=True, env=mock.ANY, timeout=30
+            ["/bin/zsh", "-c", "echo hello"], env=mock.ANY, timeout=30
         )
 
     def test_env_contains_notification_data(self) -> None:
