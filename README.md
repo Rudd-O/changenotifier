@@ -51,6 +51,7 @@ Failed webhook deliveries (e.g. the server hosting the webhook is down, or it re
 - The `inotifywait` command available (part of the `inotify-tools` package)
 - Python 3.10 or later
 - The `requests` Python package (listed as a dependency)
+- The `pyxdg` Python package (listed as a dependency)
 
 ### Install from source
 

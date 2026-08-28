@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 dynamic = ["version", "readme"]
 name = "changenotifier"
 dependencies = [
-    "requests<2.99"
+    "requests<2.99", "pyxdg"
 ]
 authors = [
     {name = "Manuel Amador (Rudd-O)", email = "rudd-o@rudd-o.com"}
