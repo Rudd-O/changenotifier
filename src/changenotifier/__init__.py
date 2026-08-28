@@ -246,9 +246,34 @@ def toggle_log_level(*args: typing.Any) -> None:
         logging.root.setLevel(logging.DEBUG)
 
 
-class PathWithTimeout(typing.TypedDict):
+class _PathBase(typing.TypedDict):
     path: str
+
+
+class PathWithTimeout(_PathBase, total=False):
     coalesce_timeout: float
+    webhook: str | None
+    command: str | None
+
+
+def resolve_path_config(
+    pth: str | PathWithTimeout,
+    global_command: str | None,
+    global_webhook: str | None,
+    global_coalesce_timeout: float,
+) -> tuple[str, str | None, str | None, float]:
+    """Return (path, command, webhook, coalesce_timeout) for one entry."""
+    if isinstance(pth, dict):
+        path = pth["path"]
+        timeout = pth.get("coalesce_timeout", global_coalesce_timeout)
+        cmd = pth.get("command", global_command)
+        whk = pth.get("webhook", global_webhook)
+    else:
+        path = pth
+        timeout = global_coalesce_timeout
+        cmd = global_command
+        whk = global_webhook
+    return path, cmd, whk, timeout
 
 
 def main() -> None:
@@ -290,14 +315,9 @@ def main() -> None:
         sys.exit(0)
 
     for pth in paths:
-        if isinstance(pth, dict):
-            p: str = pth["path"]
-            t: float = pth["coalesce_timeout"]
-        else:
-            p = pth
-            t = coalesce_timeout
+        p, cmd, whk, t = resolve_path_config(pth, command, webhook, coalesce_timeout)
         q: queue.Queue[tuple[str, str] | typing.Literal["QUIT"]] = queue.Queue()
-        c = Coalescer(q, [p], webhook, t, command)
+        c = Coalescer(q, [p], whk, t, cmd)
         n = Watcher(q, [p])
         c.start()
         n.start()
