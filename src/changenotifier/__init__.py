@@ -79,9 +79,8 @@ class Coalescer(threading.Thread):
         self.webhook = webhook
         self.coalesce_timeout = coalesce_timeout
         self.command = command
-        self.logger = logging.getLogger("Coalescer").getChild(
-            str(roots) if len(roots) > 1 else roots[0]
-        )
+        rooties = str(roots) if len(roots) > 1 else roots[0]
+        self.logger = logging.getLogger("Coalescer").getChild(rooties)
 
     def run_once(
         self,
@@ -128,6 +127,11 @@ class Coalescer(threading.Thread):
 
     @exitonerror
     def run(self) -> None:
+        wh = "  Webhook enabled." if self.webhook else ""
+        cm = "  Command execution enabled." if self.command else ""
+        self.logger.info(
+            f"Will notify {self.coalesce_timeout}s after changes stop.{wh}.{cm}"
+        )
         evt_by_path: dict[str, str] = {}
         while True:
             if self.run_once(evt_by_path, self.queue) == "stop":
