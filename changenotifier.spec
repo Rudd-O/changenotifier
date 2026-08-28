@@ -16,7 +16,7 @@ URL:            https://github.com/Rudd-O/%{_name}
 Source:         %{_name}-%{version}.tar.gz
 
 BuildArch:      noarch
-BuildRequires:  python3-devel python3-setuptools
+BuildRequires:  python3-devel python3-setuptools make systemd-rpm-macros
 Requires:       inotify-tools
 
 %global _description %{expand:
@@ -42,12 +42,28 @@ or are done being written to.}
 
 %pyproject_save_files %{_name}
 
+make install DESTDIR=$RPM_BUILD_ROOT UNITDIR=%{_unitdir} USERUNITDIR=%{_userunitdir}
+
+
 
 %check
 %tox
 
+
+%post
+%systemd_post %{name}.service
+
+%preun
+%systemd_preun %{name}.service
+
+%postun
+%systemd_postun_with_restart %{name}.service
+%systemd_user_postun_with_restart %{name}.service
+
 %files -f %{pyproject_files}
 %{_bindir}/%{name}
+%attr(0644, root, root) %{_unitdir}/%{name}@.service
+%attr(0644, root, root) %{_userunitdir}/%{name}.service
 
 %doc README.md docs/*.md
 

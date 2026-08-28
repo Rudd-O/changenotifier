@@ -1,0 +1,9 @@
+[Unit]
+Description=Notify of changes using a webhook (%i)
+
+[Service]
+ExecStart=/usr/bin/changenotifier
+User=%i
+
+[Install]
+WantedBy=multi-user.target

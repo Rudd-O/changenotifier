@@ -4,3 +4,4 @@ include docs/*.md
 include mypy.ini
 include tox.ini
 include Makefile
+include systemd/*/*.service

@@ -1,0 +1,8 @@
+[Unit]
+Description=Notify of changes using a webhook
+
+[Service]
+ExecStart=/usr/bin/changenotifier
+
+[Install]
+WantedBy=default.target

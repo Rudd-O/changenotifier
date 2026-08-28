@@ -2,6 +2,10 @@ VERSION := $(shell grep ^Version: *spec | sed 's/Version: *//')
 SOURCE := dist/changenotifier-$(VERSION).tar.gz
 SRPM := dist/$(shell rpmspec -q --qf "%{name}-%{version}-%{release}.src.rpm\n" *.spec | grep -v python3)
 RPM := dist/$(shell rpmspec -q --qf "noarch/%{name}-%{version}-%{release}.noarch.rpm\n" *.spec | grep python3)
+SYSCONFDIR := /etc
+UNITDIR := $(SYSCONFDIR)/systemd/system
+USERUNITDIR := $(SYSCONFDIR)/systemd/user
+ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 .PHONY: qa tox clean dist srpm rpm ruff
 
@@ -13,7 +17,7 @@ clean:
 tox:
 	tox --current-env
 
-$(SOURCE): src/changenotifier/*.py MANIFEST.in pyproject.toml tox.ini mypy.ini Makefile README.md docs/* docs/* *.spec
+$(SOURCE): src/changenotifier/*.py MANIFEST.in pyproject.toml tox.ini mypy.ini Makefile README.md docs/* docs/* *.spec systemd/*/*.service
 	python3 -m build
 
 dist: $(SOURCE)
@@ -35,3 +39,8 @@ qa: tox
 
 ruff:
 	ruff check --select I --select C src/changenotifier/ --fix
+
+install: systemd/*/*.service
+	cd $(ROOT_DIR) && install -D -m 0644 systemd/system/*.service -t $(DESTDIR)$(UNITDIR)/
+	cd $(ROOT_DIR) && install -D -m 0644 systemd/user/*.service -t $(DESTDIR)$(USERUNITDIR)/
+	echo Now please systemctl --system daemon-reload >&2
