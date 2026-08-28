@@ -1,6 +1,8 @@
 # `changenotifier`: have your computer perform actions when files change
 
-This program is a daemon that monitors directories for file system changes and sends HTTP webhook notifications when files are created, modified, moved, or deleted.
+This program monitors directories for file system changes and sends HTTP webhook notifications when files are created, modified, moved, or deleted.
+
+While it is mainly intended to be run as a simple service (e.g. with a service manager like `systemd`), you can run it interactively as well (e.g. under a `screen` session or a terminal window on your computer), or in a service orchestration platform (inside a pod of a Kubernetes cluster).
 
 ## How this program works
 
@@ -30,7 +32,8 @@ Failed webhook deliveries (e.g. the server hosting the webhook is down, or it re
 
 ### Prerequisites
 
-- Linux with `inotifywait` available (part of the `inotify-tools` package)
+- Linux
+- The `inotifywait` command available (part of the `inotify-tools` package)
 - Python 3.10 or later
 - The `requests` Python package (listed as a dependency)
 

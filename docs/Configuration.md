@@ -1,13 +1,23 @@
 # `changenotifier` configuration
 
-The configuration file must exist at `/etc/changenotifier.conf` and be valid JSON. It requires two top-level keys and supports two optional ones.
+The configuration file is named `changenotifier.conf` and it must exist in one of the following paths:
+
+* in any of the paths listed in `$XDG_CONFIG_DIRS`
+* in `$XDG_CONFIG_HOME` (defaulting to `~/.config`)
+* under `/etc`
+
+The first file found wins.
+
+## File format
+
+The configuration file is JSON-formatted, and the minimum configuration requires a dictionary with two keys as explained below.
 
 ### Required fields
 
 | Field        | Type     | Description                                    |
 |--------------|----------|------------------------------------------------|
 | `webhook`    | string   | The HTTP URL that will receive POST notifications on every file change event. |
-| `paths`      | array    | Either a list of strings (directory paths) or a list of dicts with per-path settings. See below for details. |
+| `paths`      | array    | Either a list of directories to monitor or a list of dicts with per-path settings. See below for details. |
 
 ### Optional fields
 

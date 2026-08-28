@@ -16,6 +16,8 @@ import time
 import traceback
 import typing
 
+import xdg.BaseDirectory
+
 
 Param = typing.ParamSpec("Param")
 RetType = typing.TypeVar("RetType")
@@ -235,45 +237,59 @@ class PathWithTimeout(typing.TypedDict):
     coalesce_timeout: float
 
 
-with open("/etc/changenotifier.conf") as conff:
-    conf = json.load(conff)
-    paths = typing.cast(typing.Iterable[str | PathWithTimeout], conf["paths"])
-    webhook = typing.cast(str, conf["webhook"])
-    debug = typing.cast(bool, conf.get("debug", False))
-    coalesce_timeout = typing.cast(float, conf.get("coalesce_timeout", 15.0))
+def main() -> None:
+    cn = "changenotifier.conf"
+    # Look for configs in ~/.config then in /etc.
+    userconfigs = list(xdg.BaseDirectory.load_config_paths(cn)) or [
+        os.path.join(xdg.BaseDirectory.xdg_config_home, cn)
+    ]
+    configfiles = userconfigs + [os.path.join("/etc", cn)]
+    assert configfiles, (
+        f"The configuration file changenotifier.conf could not be found among {configfiles}"
+    )
+    if len(configfiles) > 1:
+        print(
+            f"Multiple configuration files found, picking {configfiles[0]}",
+            file=sys.stderr,
+        )
 
-logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
+    with open(configfiles[0]) as conff:
+        conf = json.load(conff)
+        paths = typing.cast(typing.Iterable[str | PathWithTimeout], conf["paths"])
+        webhook = typing.cast(str, conf["webhook"])
+        debug = typing.cast(bool, conf.get("debug", False))
+        coalesce_timeout = typing.cast(float, conf.get("coalesce_timeout", 15.0))
 
-watchers: list[Watcher] = []
-coalescers: list[Coalescer] = []
+    logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
 
+    watchers: list[Watcher] = []
+    coalescers: list[Coalescer] = []
 
-def stop(*args: typing.Any):
-    print("Stopping notifier...", file=sys.stderr)
-    [n.stop() for n in watchers]
-    print("Stopping coalescer...", file=sys.stderr)
-    [c.stop() for c in coalescers]
-    sys.exit(0)
+    def stop(*args: typing.Any):
+        print("Stopping notifier...", file=sys.stderr)
+        [n.stop() for n in watchers]
+        print("Stopping coalescer...", file=sys.stderr)
+        [c.stop() for c in coalescers]
+        sys.exit(0)
 
+    for pth in paths:
+        if isinstance(pth, dict):
+            p: str = pth["path"]
+            t: float = pth["coalesce_timeout"]
+        else:
+            p = pth
+            t = coalesce_timeout
+        q: queue.Queue[tuple[str, str] | typing.Literal["QUIT"]] = queue.Queue()
+        c = Coalescer(q, [p], webhook, t)
+        n = Watcher(q, [p])
+        c.start()
+        n.start()
 
-for pth in paths:
-    if isinstance(pth, dict):
-        p: str = pth["path"]
-        t: float = pth["coalesce_timeout"]
-    else:
-        p = pth
-        t = coalesce_timeout
-    q: queue.Queue[tuple[str, str] | typing.Literal["QUIT"]] = queue.Queue()
-    c = Coalescer(q, [p], webhook, t)
-    n = Watcher(q, [p])
-    c.start()
-    n.start()
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGUSR1, toggle_log_level)
 
-signal.signal(signal.SIGTERM, stop)
-signal.signal(signal.SIGUSR1, toggle_log_level)
-
-try:
-    for n in watchers:
-        n.join()
-except KeyboardInterrupt:
-    stop()
+    try:
+        for n in watchers:
+            n.join()
+    except KeyboardInterrupt:
+        stop()
