@@ -18,7 +18,7 @@ import typing
 import requests
 import xdg.BaseDirectory
 
-__QUIT: typing.Literal["QUIT"] = "QUIT"
+_QUIT: typing.Literal["QUIT"] = "QUIT"
 __version__ = "0.1.0"
 
 
@@ -103,7 +103,7 @@ class Coalescer(threading.Thread):
 
         try:
             qitem = q.get(timeout=timeout)
-            if qitem == __QUIT:
+            if qitem == _QUIT:
                 return "stop"
             val, evt = qitem
             evt_by_path[val] = evt
@@ -170,7 +170,7 @@ class Coalescer(threading.Thread):
                     time.sleep(30)
 
     def stop(self) -> None:
-        self.queue.put(__QUIT)
+        self.queue.put(_QUIT)
         self.join()
 
 
