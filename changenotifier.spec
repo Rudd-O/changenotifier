@@ -7,7 +7,7 @@
 %define mybuildnumber %{?build_number}%{?!build_number:1}
 
 Name:           %{_name}
-Version:        0.0.3
+Version:        0.1.0
 Release:        %{mybuildnumber}%{?dist}
 Summary:        Get HTTP notifications or run commands when files are changed
 
