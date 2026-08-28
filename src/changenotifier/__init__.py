@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import queue
-import requests
 import shlex
 import signal
 import subprocess
@@ -16,17 +15,19 @@ import time
 import traceback
 import typing
 
+import requests
 import xdg.BaseDirectory
 
-
-Param = typing.ParamSpec("Param")
-RetType = typing.TypeVar("RetType")
 __QUIT: typing.Literal["QUIT"] = "QUIT"
 __version__ = "0.0.1"
 
 
+Param = typing.ParamSpec("Param")
+RetType = typing.TypeVar("RetType")
+
+
 def exitonerror(f: typing.Callable[Param, RetType]) -> typing.Callable[Param, RetType]:
-    def inner(*a: Param.args, **kw: Param.kwargs):
+    def inner(*a: Param.args, **kw: Param.kwargs) -> RetType:
         try:
             return f(*a, **kw)
         except BaseException as exc:
@@ -36,7 +37,7 @@ def exitonerror(f: typing.Callable[Param, RetType]) -> typing.Callable[Param, Re
     return inner
 
 
-class Classifier(dict[str, dict[str, typing.Any]]):
+class Classifier(dict[str, dict[str, float]]):
     def __init__(self, roots: list[str]):
         for root in roots:
             self[os.path.abspath(root)] = {}
@@ -52,7 +53,7 @@ class Classifier(dict[str, dict[str, typing.Any]]):
                 break
         return matched
 
-    def latest_per_root(self):
+    def latest_per_root(self) -> typing.Iterator[tuple[str, str, float]]:
         for root, data in self.items():
             if not data:
                 continue
@@ -130,7 +131,7 @@ class Coalescer(threading.Thread):
             if self.run_once(evt_by_path, self.queue) == "stop":
                 break
 
-    def notify(self, val: str, evt: str):
+    def notify(self, val: str, evt: str) -> None:
         self.logger.debug("EMIT: %s -- %s", val, evt)
         data = {
             "latest_modified_item": val,
@@ -141,7 +142,7 @@ class Coalescer(threading.Thread):
         }
         while True:
             try:
-                r = requests.post(webhook, json=data)
+                r = requests.post(self.webhook, json=data)
                 r.raise_for_status()
                 break
             except Exception as e:
@@ -151,7 +152,7 @@ class Coalescer(threading.Thread):
                 )
                 time.sleep(30)
 
-    def stop(self):
+    def stop(self) -> None:
         self.queue.put(__QUIT)
         self.join()
 
@@ -164,14 +165,14 @@ class Watcher(threading.Thread):
     ):
         super().__init__()
         self.queue = queue
-        self.notifier = None
+        self.notifier: subprocess.Popen[str] | None = None
         self.paths = paths
         self.logger = logging.getLogger("Watcher").getChild(
             str(paths) if len(paths) > 1 else paths[0]
         )
 
     @exitonerror
-    def run(self):
+    def run(self) -> None:
         q = self.queue
         debug = self.logger.debug
         modified = {}
@@ -216,14 +217,14 @@ class Watcher(threading.Thread):
 
         notifier.wait()
 
-    def stop(self):
+    def stop(self) -> None:
         if self.notifier:
             self.notifier.kill()
             self.notifier = None
         self.join()
 
 
-def toggle_log_level(*args: typing.Any):
+def toggle_log_level(*args: typing.Any) -> None:
     if logging.root.level == logging.DEBUG:
         logging.root.info("Changing log level to INFO")
         logging.root.setLevel(logging.INFO)
@@ -265,11 +266,13 @@ def main() -> None:
     watchers: list[Watcher] = []
     coalescers: list[Coalescer] = []
 
-    def stop(*args: typing.Any):
+    def stop(*args: typing.Any) -> None:
         print("Stopping notifier...", file=sys.stderr)
-        [n.stop() for n in watchers]
+        for n in watchers:
+            n.stop()
         print("Stopping coalescer...", file=sys.stderr)
-        [c.stop() for c in coalescers]
+        for c in coalescers:
+            c.stop()
         sys.exit(0)
 
     for pth in paths:
