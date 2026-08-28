@@ -30,7 +30,7 @@ or are done being written to.}
 %autosetup -p1
 
 %generate_buildrequires
-%pyproject_buildrequires
+%pyproject_buildrequires -t
 
 
 %build
