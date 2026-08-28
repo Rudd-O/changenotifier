@@ -7,7 +7,7 @@
 %define mybuildnumber %{?build_number}%{?!build_number:1}
 
 Name:           %{_name}
-Version:        0.0.1
+Version:        0.0.2
 Release:        %{mybuildnumber}%{?dist}
 Summary:        Get HTTP notifications or run commands when files are changed
 
@@ -47,6 +47,7 @@ or are done being written to.}
 %tox
 
 %files -f %{pyproject_files}
+%{_bindir}/%{name}
 
 %doc README.md docs/*.md
 

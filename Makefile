@@ -13,7 +13,7 @@ clean:
 tox:
 	tox --current-env
 
-$(SOURCE): src/changenotifier/*.py MANIFEST.in pyproject.toml tox.ini mypy.ini Makefile README.md docs/* docs/*/* *.spec
+$(SOURCE): src/changenotifier/*.py MANIFEST.in pyproject.toml tox.ini mypy.ini Makefile README.md docs/* docs/* *.spec
 	python3 -m build
 
 dist: $(SOURCE)

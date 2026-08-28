@@ -5,3 +5,5 @@ organizer-*
 organizer.egg-info
 build
 .settings
+.tox
+*.egg-info
