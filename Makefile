@@ -3,7 +3,7 @@ SOURCE := dist/changenotifier-$(VERSION).tar.gz
 SRPM := dist/$(shell rpmspec -q --qf "%{name}-%{version}-%{release}.src.rpm\n" *.spec | grep -v python3)
 RPM := dist/$(shell rpmspec -q --qf "noarch/%{name}-%{version}-%{release}.noarch.rpm\n" *.spec | grep python3)
 
-.PHONY: qa tox clean dist srpm rpm
+.PHONY: qa tox clean dist srpm rpm ruff
 
 clean:
 	rm -rf .tox *.egg-info dist .mypy_cache .ruff_cache
@@ -32,3 +32,6 @@ rpm-notests: $(SRPM)
 	rpmbuild --define '%disable_tests true' --define '%_rpmdir dist' --rebuild $(SRPM)
 
 qa: tox
+
+ruff:
+	ruff check --select I --select C src/changenotifier/ --fix

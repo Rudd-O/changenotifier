@@ -9,4 +9,5 @@ docs/*.md                                      # general documentation of the pr
 ```
 
 Tox (`tox --current-env`) is the test framework, and it runs Ruff, MyPy and pytest.
-You can invoke the tests using command `make qa`.
+You can invoke the tests using command `make qa`.  If Ruff complains, you can auto
+fix everything with `make ruff` and then reread the affected files.
