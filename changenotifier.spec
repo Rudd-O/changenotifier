@@ -15,9 +15,12 @@ License:        GPLv3+
 URL:            https://github.com/Rudd-O/%{_name}
 Source:         %{_name}-%{version}.tar.gz
 
-BuildArch:      noarch
-BuildRequires:  python3-devel python3-setuptools make systemd-rpm-macros
-Requires:       inotify-tools
+BuildArch:        noarch
+BuildRequires:    python3-devel python3-setuptools make systemd-rpm-macros
+Requires:         inotify-tools
+Requires(post):   gawk grep
+Requires(preun):  gawk grep
+Requires(postun): gawk grep
 
 %global _description %{expand:
 This program allows you to get notifications via HTTP REST calls, or run
@@ -47,18 +50,30 @@ make install DESTDIR=$RPM_BUILD_ROOT UNITDIR=%{_unitdir} USERUNITDIR=%{_userunit
 
 
 %check
-%tox
+%{!?disable_tests:%{tox}}%{?disable_tests:true}
 
 
 %post
-%systemd_post %{name}.service
+active=$(%{_bindir}/systemctl list-units --type=service --state=running --no-legend | awk ' { print $1 } ' | grep ^${name}@)
+for unit in $active ; do
+%systemd_post "$unit"
+done
+%systemd_user_post %{name}.service
 
 %preun
-%systemd_preun %{name}.service
+active=$(%{_bindir}/systemctl list-units --type=service --state=running --no-legend | awk ' { print $1 } ' | grep ^%{name}@)
+for unit in $active ; do
+%systemd_preun "$unit"
+done
+%systemd_user_preun %{name}.service
 
 %postun
-%systemd_postun_with_restart %{name}.service
+active=$(%{_bindir}/systemctl list-units --type=service --state=running --no-legend | awk ' { print $1 } ' | grep ^%{name}@)
+for unit in $active ; do
+%systemd_postun_with_restart "$unit"
+done
 %systemd_user_postun_with_restart %{name}.service
+
 
 %files -f %{pyproject_files}
 %{_bindir}/%{name}
