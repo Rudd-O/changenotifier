@@ -71,9 +71,21 @@ You can also use prebuilt packages.  RPMs for Fedora are available at [repo.rudd
 
 ### Configuring the program
 
-To configure `changenotifier`, see the [configuration document](docs/Configuration.md) for details.
+To discover how to configure `changenotifier`, see the [configuration reference document](docs/Configuration.md) for details.
 
-After configuration, you can run `changenotifier` in your terminal, to verify that the configuration is properly read and the expected directories are being monitored.
+Here is a sample configuration you'd add to `~/.config/changenotifier.conf` that would run a hypothetical `organize-music` program on your computer when new music is added to your collection, then notify a sample webhook on your LAN:
+
+```json
+{
+  "webhook": "https://192.168.1.2/musicserver/ingest",
+  "command": "organize-music /home/user/Music",
+  "paths": [
+    "/home/user/Music",
+  ]
+}
+```
+
+After configuration, you can run `changenotifier` in your terminal, to verify that the configuration is properly read and the expected directories are being monitored.  Make changes to files in the targeted paths, and see what happens.
 
 ### Running it as a service
 
