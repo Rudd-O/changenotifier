@@ -69,7 +69,7 @@ class Coalescer(threading.Thread):
         self,
         queue: queue.Queue[tuple[str, str] | typing.Literal["QUIT"]],
         roots: list[str],
-        webhook: str,
+        webhook: str | None,
         coalesce_timeout: float = 30,
         command: str | None = None,
     ):
@@ -152,17 +152,18 @@ class Coalescer(threading.Thread):
             except Exception as e:
                 self.logger.warning("Command execution failed: %s", e)
 
-        while True:
-            try:
-                r = requests.post(self.webhook, json=data)
-                r.raise_for_status()
-                break
-            except Exception as e:
-                print(
-                    f"Failed webhook POST (retrying in 30 seconds): {e}",
-                    file=sys.stderr,
-                )
-                time.sleep(30)
+        if self.webhook is not None:
+            while True:
+                try:
+                    r = requests.post(self.webhook, json=data)
+                    r.raise_for_status()
+                    break
+                except Exception as e:
+                    print(
+                        f"Failed webhook POST (retrying in 30 seconds): {e}",
+                        file=sys.stderr,
+                    )
+                    time.sleep(30)
 
     def stop(self) -> None:
         self.queue.put(__QUIT)
@@ -269,7 +270,7 @@ def main() -> None:
     with open(configfiles[0]) as conff:
         conf = json.load(conff)
         paths = typing.cast(typing.Iterable[str | PathWithTimeout], conf["paths"])
-        webhook = typing.cast(str, conf["webhook"])
+        webhook = typing.cast(str | None, conf.get("webhook"))
         debug = typing.cast(bool, conf.get("debug", False))
         command = typing.cast(str | None, conf.get("command"))
         coalesce_timeout = typing.cast(float, conf.get("coalesce_timeout", 15.0))

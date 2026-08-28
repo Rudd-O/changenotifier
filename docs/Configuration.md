@@ -10,21 +10,21 @@ The first file found wins.
 
 ## File format
 
-The configuration file is JSON-formatted, and the minimum configuration requires a dictionary with two keys as explained below.
+The configuration file is JSON-formatted, and the minimum configuration requires a single key `paths`, but to be useful you will have to specify at least one optional key `command` or `webhook`.
 
 ### Required fields
 
-| Field        | Type     | Description                                    |
-|--------------|----------|------------------------------------------------|
-| `webhook`    | string   | The HTTP URL that will receive POST notifications on every file change event. |
-| `paths`      | array    | Either a list of directories to monitor or a list of dicts with per-path settings. See below for details. |
+| Field     | Type    | Description                                    |
+|-----------|---------|------------------------------------------------|
+| `paths`   | array   | Either a list of directories to monitor or a list of dicts with per-path settings. See below for details. |
 
 ### Optional fields
 
 | Field                | Type    | Default | Description                                                    |
 |----------------------|---------|---------|----------------------------------------------------------------|
 | `coalesce_timeout`   | number  | 15.0    | The grace period in seconds. Files changed within this window are grouped together; only the most recent file triggers a notification per watched path. Global default used when individual paths do not specify their own timeout. |
-| `command`            | string  |         | An optional shell command to run on every file change event. The following environment variables are available (derived from webhook data): `LATEST_MODIFIED_ITEM`, `LATEST_MODIFIED_FOLDER`, `LATEST_MODIFIED_FILE`, `EVENTS`, `SOURCE`. If the command fails, a warning is logged but the notification continues. |
+| `webhook`            | string  |         | An optional HTTP URL that will receive POST notifications on every file change event. Omit or set to null to prevent webhook notifications from being sent. |
+| `command`            | string  |         | An optional shell command to run on every file change event. The following environment variables are available: `LATEST_MODIFIED_ITEM`, `LATEST_MODIFIED_FOLDER`, `LATEST_MODIFIED_FILE`, `EVENTS`, `SOURCE`. If the command fails, a warning is logged but the notification continues. |
 | `debug`              | boolean | false   | When true, log level is set to DEBUG immediately on startup. |
 
 ### Paths configuration
@@ -43,6 +43,17 @@ The `paths` array supports two syntaxes:
 }
 ```
 
+Or without a webhook (using a command instead):
+
+```json
+{
+  "paths": [
+    "/home/user/Music"
+  ],
+  "command": "curl -X POST https://example.com/hook -d \"file=$LATEST_MODIFIED_ITEM\""
+}
+```
+
 **Per-path with custom timeout:**
 
 ```json
@@ -55,6 +66,21 @@ The `paths` array supports two syntaxes:
       "coalesce_timeout": 60.0
     }
   ]
+}
+```
+
+Or with a command instead:
+
+```json
+{
+  "paths": [
+    "/home/user/Music",
+    {
+      "path": "/home/user/Desktop",
+      "coalesce_timeout": 60.0
+    }
+  ],
+  "command": "curl -X POST https://example.com/hook -d \"file=$LATEST_MODIFIED_ITEM\""
 }
 ```
 
@@ -74,10 +100,7 @@ Paths that are dicts use the same keys as before: `path` specifies the directory
   // do not specify their own coalesce_timeout.
   "coalesce_timeout": 15.0,
 
-  // Optional: run a shell command on every file change event. Environment variables
-  // available inside the command: LATEST_MODIFIED_ITEM, LATEST_MODIFIED_FOLDER,
-  // LATEST_MODIFIED_FILE, EVENTS, SOURCE. Failure is logged as a warning but does not
-  // prevent the webhook notification from being sent.
+  // Run this shell command on every file change event batch.
   "command": "curl -X POST https://example.com/hook -d \"file=$LATEST_MODIFIED_ITEM\"",
 
   // List of directories to watch. Each entry is one of:
