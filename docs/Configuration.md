@@ -3,10 +3,12 @@
 The configuration file is named `changenotifier.conf` and it must exist in one of the following paths:
 
 * in any of the paths listed in `$XDG_CONFIG_DIRS`
-* in `$XDG_CONFIG_HOME` (defaulting to `~/.config`)
+* in `$XDG_CONFIG_HOME` (defaulting to `~/.config` — `.config` inside the home directory of the user running it)
 * under `/etc`
 
 The first file found wins.
+
+Make sure your configuration file is not group or world readable!  Oftentimes webhooks contain secrets — leaving the file open for anyone to read would leak these secrets in most situations.
 
 ## File format
 

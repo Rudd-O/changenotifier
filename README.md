@@ -69,7 +69,7 @@ This registers the `changenotifier` CLI entry point, which invokes `main()` from
 
 ### RPM packaging
 
-RPMs for Fedora are available at [repo.rudd-o.com](https://repo.rudd-o.com/).  The RPM specfile is included so you can build your own source tarball using `python3 -m build --sdist` and then build the RPM accordingly.
+RPMs for Fedora are available at [repo.rudd-o.com](https://repo.rudd-o.com/).  The RPM specfile is included so you can build your own source tarball using `python3 -m build --sdist` and then build the RPM accordingly (using `make rpm`).
 
 ## Configuration
 
