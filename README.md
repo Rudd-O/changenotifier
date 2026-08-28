@@ -91,5 +91,5 @@ After configuration, you can run `changenotifier` in your terminal, to verify th
 
 There are two ways of running the program in the background, after the program has been configured for a particular computer user:
 
-* As a systemd system service: `systemctl enable --now changenotifier@$USER`.  This method runs `changenotifier` as soon as the system boots.
-* As a systemd user service: `systemctl --user enable --now changenotifier`.  This method runs the program as soon as the user logs in or, if `loginctl enable-linger $USER` has been run, shortly after the system is fully booted.
+* As a systemd system service: `systemctl enable --now changenotifier@$USER` (run this command as root).  This method runs `changenotifier` as soon as the system boots.
+* As a systemd user service: `systemctl --user enable --now changenotifier` (run this command as the user you want to run the program as).  This method runs the program as soon as the user logs in or, if `loginctl enable-linger $USER` has been run by root, shortly after the system is fully booted.
