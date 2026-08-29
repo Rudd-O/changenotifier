@@ -19,7 +19,7 @@ import requests
 import xdg.BaseDirectory
 
 _QUIT: typing.Literal["QUIT"] = "QUIT"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 Param = typing.ParamSpec("Param")
