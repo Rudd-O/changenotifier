@@ -46,4 +46,4 @@ install: systemd/*/*.service
 	echo Now please systemctl --system daemon-reload >&2
 
 deps-fedora:
-	dnf install -yq python3-requests python3-types-requests python3-pyxdg rpm-build ruff python3-mypy systemd-rpm-macros python-rpm-macros pyproject-rpm-macros python3-tox-current-env python3-build python3-setuptools python3-pytest python3-ruff
+	dnf install -yq --setopt=install_weak_deps=False python3-requests python3-types-requests python3-pyxdg rpm-build ruff python3-mypy systemd-rpm-macros python-rpm-macros pyproject-rpm-macros python3-tox-current-env python3-build python3-setuptools python3-pytest python3-ruff python3-devel python3-pip
