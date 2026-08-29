@@ -67,7 +67,7 @@ pip install .
 
 To get the systemd service units installed, you can `make install` in the source directory.
 
-You can also use prebuilt packages.  RPMs for Fedora are available at [repo.rudd-o.com](https://repo.rudd-o.com/).  You can also build your own packages — the RPM specfile is included in the source so you can build your own source tarball using `python3 -m build --sdist` and then build the RPM accordingly (using `make rpm`).  The systemd service units are included in the prebuilt package.
+You can also use prebuilt packages.  RPMs for Fedora are available at [repo.rudd-o.com](https://repo.rudd-o.com/).  You can also build your own packages — the RPM specfile is included in the source so you can build your own RPM (first run `make deps-fedora` then `make rpm`).  The systemd service units are included in the prebuilt package.
 
 ### Configuring the program
 
